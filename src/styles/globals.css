@@ -4,19 +4,29 @@
 @import url('https://fonts.googleapis.com/css2?family=Josefin+Sans&display=swap');
 
 :root {
-  margin: 0 auto;
+  margin: 2rem auto;
   font-family: 'Josefin Sans', sans-serif;
 }
 
 
 body {
+  display: flex;
+  flex-direction: column;
+  flex-wrap: wrap;
+  align-content: center;
+  background-color: rgb(241 245 249);
   margin: 0;
-  padding: 0;
-  max-height: 100%;
+  padding: 2rem;
+  width: auto;
+  height: auto;
 }
 
-@layer utilities {
-  .text-balance {
-    text-wrap: balance;
-  }
+footer {
+  position: fixed;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  color: white;
+  text-align: center;
+  padding: 10px;
 }
