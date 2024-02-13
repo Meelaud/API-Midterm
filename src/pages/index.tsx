@@ -3,7 +3,6 @@ import axios from "axios";
 import { useState } from "react";
 
 
-
 export default function Home() {
 
   interface CurrentWeather {
@@ -22,14 +21,35 @@ export default function Home() {
     }
   }
 
+  interface FiveWeather {
+    dt: number;
+    main: {
+      temp: number;
+    };
+    weather: [
+      {
+        main: string;
+        description: string;
+      }
+    ];
+    wind: {
+      speed: number;
+    }
+  }
+
+  interface FiveWeatherList {
+    list: FiveWeather[];
+  }
+
   const apiKey = process.env.NEXT_PUBLIC_API;
 
   const [location, setLocation] = useState('');
   const [data, setData] = useState<CurrentWeather>();
+  const [five, setFive] = useState<FiveWeatherList>();
 
 
   const getWeatherData = async () => {
-    
+
     const url = `https://api.openweathermap.org/data/2.5/weather?q=${location}&appid=${apiKey}&units=metric`
 
     try {
@@ -41,18 +61,26 @@ export default function Home() {
     }
   };
 
-  // useEffect(() => {
-  //   if (location) { 
-  //     getWeatherData();
-  //   }
-  // }, [location]);
+  const getFiveWeather = async () => {
+
+    const fiveUrl = `https://api.openweathermap.org/data/2.5/forecast?q=${location}&appid=${apiKey}&units=metric`;
+
+    try {
+      const response = await axios.get(fiveUrl);
+      console.log(response.data);
+      setFive(response.data);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
 
   const keyPress = (event: React.KeyboardEvent<HTMLInputElement>) => {
     if (event.key === 'Enter') {
       getWeatherData();
+      getFiveWeather();
     }
   };
-
 
   const UpDate = (timestamp: number) => {
     return new Date(timestamp * 1000).toLocaleDateString("en-CA", {
@@ -80,19 +108,49 @@ export default function Home() {
             onKeyDown={keyPress}
             className={`border-sky-400 border-2 p-3 rounded-l-full rounded-r-full`}
           />
-          <p className={`text-center pt-10`}><span>Feeling lost about tomorrows weather? <br></br>Search up your location to find your path through the next six days. </span></p>
+          <p className={`text-center pt-10`}><span>Feeling lost about tomorrows weather? <br></br>Search up your location to find your path through the next five days. </span></p>
 
           <div>
             {data && (
-              <div>
-                <h2 className={`text-xl`}>{data.name}</h2>
-                <div>Last Updated: {UpDate(data.dt)}</div>
-                <div>Temperature: {data.main.temp}°C</div>
-                <div>Condition: {data.weather[0].main}</div>
-                <div>Wind Speed: {data.wind.speed} m/s</div>
+              <div className={`p-5 flex flex-wrap flex-row justify-between mt-10 border-sky-400 border-2 p-3 rounded-xl`}>
+                <div>
+                  <h2 className={`text-xl`}>{data.name}</h2>
+                  <div>Last Updated: {UpDate(data.dt)}</div>
+                </div>
+                <div>
+                  <div className={`text-xl`}>{data.main.temp.toFixed(1)}°C</div>
+                  {data.weather[0].main && (
+                    <Image
+                      src={`/images/${data.weather[0].main}.svg`}
+                      width="60"
+                      height="60"
+                      alt="weather icon"
+                    />
+                  )}
+                  <div>{data.weather[0].main}</div>
+                  <div>Wind Speed: {data.wind.speed} m/s</div>
+                </div>
               </div>
             )}
           </div>
+
+          <div>
+            {five && five.list.map((d, index) => (
+              <div key={index} className={`p-5 flex flex-wrap flex-row justify-between mt-10 border-sky-400 border-2 p-3 rounded-xl`}>
+                <div>
+                  <div className={`text-xl`}>{UpDate(d.dt)}</div>
+                  <div>{d.main.temp.toFixed(1)}°C</div>
+                </div>
+                <div>
+                  <div>Condition: {d.weather[0].main}</div>
+                  <div>{d.weather[0].description}</div>
+                </div>
+                <div>Wind Speed: {d.wind.speed} m/s</div>
+              </div>
+            ))}
+          </div>
+
+          {/* can't figure out how to isolate just one map per day :( */}
 
         </article>
 
